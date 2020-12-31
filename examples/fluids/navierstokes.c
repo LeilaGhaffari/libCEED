@@ -943,7 +943,8 @@ int main(int argc, char **argv) {
                             sizeof(ceedresource), NULL); CHKERRQ(ierr);
   ierr = PetscOptionsBool("-test", "Run in test mode",
                           NULL, test=PETSC_FALSE, &test, NULL); CHKERRQ(ierr);
-  ierr = PetscOptionsScalar("-compare_final_state_atol", "Test absolute tolerance",
+  ierr = PetscOptionsScalar("-compare_final_state_atol",
+                            "Test absolute tolerance",
                             NULL, testtol, &testtol, NULL); CHKERRQ(ierr);
   ierr = PetscOptionsString("-compare_final_state_filename", "Test filename",
                             NULL, filepath, filepath,
