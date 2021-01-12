@@ -14,7 +14,15 @@
 // software, applications, hardware, advanced system engineering and early
 // testbed platforms, in support of the nation's exascale computing imperative.
 
-#define _POSIX_C_SOURCE 200112
+#define _POSIX_C_SOURCE 200112 // LG: If you define this macro to a value greater 
+                               //     than or equal to 200112L, then the functionality  
+                               //     from the 2001 edition of the POSIX standard 
+                               //     (IEEE Standard 1003.1-2001) is made available. 
+
+                               // The Portable Operating System Interface (POSIX) 
+                               // is a family of standards specified by the IEEE 
+                               // Computer Society for maintaining compatibility 
+                               // between operating systems.
 #include <ceed-impl.h>
 
 #include <stdarg.h>
@@ -86,7 +94,11 @@ int CeedErrorAbort(Ceed ceed, const char *filename, int lineno,
                    const char *func, int ecode,
                    const char *format, va_list args) {
   fprintf(stderr, "%s:%d in %s(): ", filename, lineno, func);
-  vfprintf(stderr, format, args);
+  vfprintf(stderr, format, args); // Writes the C string pointed by format to the stream, 
+                                  // replacing any format specifier in the same way as printf does, 
+                                  // but using the elements in the variable argument list identified 
+                                  // by arg instead of additional function arguments.
+                                  // stderr: standard error
   fprintf(stderr, "\n");
   abort();
   return ecode;
@@ -134,10 +146,12 @@ int CeedRegister(const char *prefix,
 /// @param p Address of pointer to hold the result.
 /// @sa CeedFree()
 int CeedMallocArray(size_t n, size_t unit, void *p) {
-  int ierr = posix_memalign((void **)p, CEED_ALIGN, n*unit);
+  int ierr = posix_memalign((void **)p, CEED_ALIGN, n*unit);  // allocate aligned memory
   if (ierr)
     return CeedError(NULL, ierr,
                      "posix_memalign failed to allocate %zd members of size %zd\n", n, unit);
+                     // LG: Here is the place where more arguments are need since we want to 
+                     //     report errors with strings and numbers.
   return 0;
 }
 
@@ -153,7 +167,7 @@ int CeedCallocArray(size_t n, size_t unit, void *p) {
   *(void **)p = calloc(n, unit);
   if (n && unit && !*(void **)p)
     return CeedError(NULL, 1, "calloc failed to allocate %zd members of size %zd\n",
-                     n, unit);
+                     n, unit);  // LG: Why it is allocated in a different way?
   return 0;
 }
 
@@ -186,13 +200,17 @@ int CeedRequestWait(CeedRequest *req) {
 /// @sa CeedRegister() CeedDestroy()
 int CeedInit(const char *resource, Ceed *ceed) {
   int ierr;
-  size_t matchlen = 0, matchidx;
+  size_t matchlen = 0, matchidx;  
+  // LG: size_t= unsigned integer data type which can assign only 0 
+  //     and greater than 0 integer values. It measure bytes of any object's size and 
+  //     returned by sizeof operator. const is the syntax representation of size_t , 
+  //     but without const you can run the programm.
 
   if (!resource) return CeedError(NULL, 1, "No resource provided");
   for (size_t i=0; i<num_backends; i++) {
     size_t n;
     const char *prefix = backends[i].prefix;
-    for (n = 0; prefix[n] && prefix[n] == resource[n]; n++) {}
+    for (n = 0; prefix[n] && prefix[n] == resource[n]; n++) {}  // LG: What is this condition?
     if (n > matchlen) {
       matchlen = n;
       matchidx = i;

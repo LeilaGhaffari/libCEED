@@ -464,7 +464,9 @@ static int CeedInit_Ref(const char *resource, Ceed ceed) {
   return 0;
 }
 
-__attribute__((constructor))
+__attribute__((constructor))    // GCC syntax: when used with a function, executes 
+                                // the same function at the startup of the program, 
+                                // i.e before main() function.
 static void Register(void) {
   CeedRegister("/cpu/self/ref", CeedInit_Ref);
 }
