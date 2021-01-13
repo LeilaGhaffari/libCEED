@@ -54,11 +54,12 @@ void CeedDebug(const char *,...);
 
 struct CeedVector_private {
   Ceed ceed;
-  int (*SetArray)(CeedVector, CeedMemType, CeedCopyMode, CeedScalar *);
-  int (*GetArray)(CeedVector, CeedMemType, CeedScalar **);
-  int (*GetArrayRead)(CeedVector, CeedMemType, const CeedScalar **);
-  int (*RestoreArray)(CeedVector, CeedScalar **);
-  int (*RestoreArrayRead)(CeedVector, const CeedScalar **);
+  int (*SetArray)(CeedVector, CeedMemType, CeedCopyMode, CeedScalar *); // LG: Set the array used by a CeedVector, freeing any previously allocated array if applicable
+                           // I think the values of type CeedScalar will be set on the first vector (1st arg)
+  int (*GetArray)(CeedVector, CeedMemType, CeedScalar **); // LG: Returns a pointer to a contiguous array that contains this processor's portion of the vector data. If the underlying vector data is not stored in a contiguous array this routine will copy the data to a contiguous array and return a pointer to that.
+  int (*GetArrayRead)(CeedVector, CeedMemType, const CeedScalar **); // LG: Get read-only pointer to contiguous array containing this processor's portion of the vector data.
+  int (*RestoreArray)(CeedVector, CeedScalar **); // LG: Needs to be called after GetArray
+  int (*RestoreArrayRead)(CeedVector, const CeedScalar **); // LG: Needs to be called after GetArrayRead
   int (*Destroy)(CeedVector);
   CeedInt length;
   void *data;

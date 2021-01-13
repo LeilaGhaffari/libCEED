@@ -68,7 +68,8 @@ CeedRequest *const CEED_REQUEST_IMMEDIATE = &ceed_request_immediate;
 /// Error handling implementation; use \ref CeedError instead.
 int CeedErrorImpl(Ceed ceed, const char *filename, int lineno, const char *func,
                   int ecode, const char *format, ...) {
-  va_list args;
+  va_list args; // LG: initializes an object of this type in such a way that subsequent 
+                //     calls to va_arg sequentially retrieve the additional arguments passed to the function.
   va_start(args, format);
   if (ceed) return ceed->Error(ceed, filename, lineno, func, ecode, format, args);
   return CeedErrorAbort(ceed, filename, lineno, func, ecode, format, args);
@@ -173,10 +174,25 @@ int CeedCallocArray(size_t n, size_t unit, void *p) {
 
 /// Free memory allocated using CeedMalloc() or CeedCalloc()
 ///
-/// @param p address of pointer to memory.  This argument is of type void* to avoid needing a cast, but is the address of the pointer (which is zeroed) rather than the pointer.
-int CeedFree(void *p) {
-  free(*(void **)p);
-  *(void **)p = NULL;
+/// @param p address of pointer to memory.  This argument is of type void* to avoid needing a cast, 
+             // but is the address of the pointer (which is zeroed) rather than the pointer.
+
+int CeedFree(void *p) { // LG: void pointer => has no associated data type with it
+                        //     void pointers cannot be dereferenced
+  
+  free(*(void **)p);   // LG: A void** is a pointer to a void*. 
+                           // void** is not special in any way - it's just a pointer to something, where that something happens to be a void*.
+                           // (void**)something casts something to a void**.
+                           // *something dereferences something.
+                           // Therefore, *(void**)something casts something to a void**, 
+                           // and then dereferences it (yielding a void*).
+ 
+  *(void **)p = NULL;   // LG: NULL pointer => 1- Initialize a pointer
+                                            // 2- Check for NULL pointer. 
+                                            //    perform error handling in pointer related code e.g. 
+                                            //    dereference pointer variable only if it’s not NULL.
+                                            // 3- To pass a null pointer to a function argument when we 
+                                            //    don’t want to pass any valid memory address.
   return 0;
 }
 
