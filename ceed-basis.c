@@ -62,10 +62,30 @@ int CeedBasisCreateTensorH1(Ceed ceed, CeedInt dim, CeedInt ncomp, CeedInt P1d,
   ierr = CeedMalloc(Q1d,&(*basis)->qweight1d); CeedChk(ierr);
   memcpy((*basis)->qref1d, qref1d, Q1d*sizeof(qref1d[0]));
   memcpy((*basis)->qweight1d, qweight1d, Q1d*sizeof(qweight1d[0]));
+
+  // LG
+  // n1    q1    n2    q2    n3
+  // +-----*-----+-----*-----+    p=2 & q=2 in each element
+  // interp1d: Values of nodal basis functions at quadrature points in 1D
+  // q1 ---> [N1(q1)  N2(q1) N3(q1)]
+  // q2 ---> [N1(q2)  N2(q2) N3(q2)]
+  //          ^        ^      ^ 
+  //          |        |      | 
+  //          N1       N2     N3
+  //
+  // So we need p*q matrix (interp1d) for a 1D basis functions but we reshape it
+  //   to have a vector instead.
   ierr = CeedMalloc(Q1d*P1d,&(*basis)->interp1d); CeedChk(ierr);
+
+  // grad1d: derivatives of nodal basis functions at quadrature points in 1D
   ierr = CeedMalloc(Q1d*P1d,&(*basis)->grad1d); CeedChk(ierr);
+
+  // So, now that we created the vector, we copy them in the basis object
+  //        destination      source       size
+  //        -----------      -------   ---------------------------
   memcpy((*basis)->interp1d, interp1d, Q1d*P1d*sizeof(interp1d[0]));
   memcpy((*basis)->grad1d, grad1d, Q1d*P1d*sizeof(interp1d[0]));
+
   ierr = ceed->BasisCreateTensorH1(ceed, dim, P1d, Q1d, interp1d, grad1d, qref1d,
                                    qweight1d, *basis); CeedChk(ierr);
   return 0;
@@ -105,6 +125,21 @@ int CeedBasisCreateTensorH1Lagrange(Ceed ceed, CeedInt dim, CeedInt ncomp,
     ierr = CeedLobattoQuadrature(Q, qref1d, qweight1d); CeedChk(ierr);
     break;
   }
+  // LG:
+  // This is constructing a bisis matrix and its grad.
+  // Take a linear 1d element as an example
+  // n1   q1          q2   n2
+  // +----#-----o-----#----+    p=1 & q=2 (==> Gauss-Legendre quadrature)
+  // -1         0          +1
+  //
+  // n1                    n2
+  // +----------o----------+    p=1 & q=2 (==> Gauss-Legendre-Lobatto quadrature)
+  // #(q1)                 #(q2)
+  //
+  // interp1d:
+  //   N1 = 0.5(1-qref1d)
+  //   N2 = 0.5(1+qref1d)
+
   // Build B, D matrix
   // Fornberg, 1998
   for (i = 0; i  < Q; i++) {
