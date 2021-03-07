@@ -41,10 +41,10 @@ int CeedVectorCreate(Ceed ceed, CeedInt length, CeedVector *vec) {
 
 /// Set the array used by a vector, freeing any previously allocated array if applicable.
 ///
-/// @param x Vector
+/// @param x Vector (LG: Destination)
 /// @param mtype Memory type of the array being passed
 /// @param cmode Copy mode for the array
-/// @param array Array to be used, or NULL with CEED_COPY_VALUES to have the library allocate
+/// @param array Array to be used, or NULL with CEED_COPY_VALUES to have the library allocate (LG: source)
 int CeedVectorSetArray(CeedVector x, CeedMemType mtype, CeedCopyMode cmode,
                        CeedScalar *array) {
   int ierr;
